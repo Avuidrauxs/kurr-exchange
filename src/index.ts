@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import 'reflect-metadata';
 import express from 'express';
+import http from 'http';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import pinoHttp from 'pino-http';
@@ -9,11 +10,13 @@ import errorHandler from './api/middleware/errorHandler';
 import { config } from './core/config';
 import logger from './core/lib/logger';
 import taskEngine from './core/infrastructure/task-engine/taskEngine';
-import { WebSocketManager } from './core/lib';
+import { WebSocketManager } from './core/lib/websocket';
+import { createSimulateExchangeRouter } from './api/simulate-exchange/routes';
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
 const { port, env } = config.server;
 
 // Apply Pino HTTP middleware for logging requests
@@ -57,14 +60,18 @@ app.get('/metrics', (req, res) => {
 });
 
 // Routes go here
+const simulateExchangeRouter = createSimulateExchangeRouter();
 
-new WebSocketManager(app, taskEngine);
+app.use('/api', simulateExchangeRouter);
+
+// Websocket Logic
+new WebSocketManager(server, taskEngine);
 
 // Catch-all error handling middleware
 app.use(errorHandler);
 
 if (env !== 'test') {
-  app.listen(port, () => {
+  server.listen(port, () => {
     console.log(`Server running on port ${port}`);
   });
 }

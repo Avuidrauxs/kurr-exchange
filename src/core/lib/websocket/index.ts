@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { TaskEngine } from '../infrastructure/task-engine/taskEngine';
+import { TaskEngine } from '../../infrastructure/task-engine/taskEngine';
 
 export class WebSocketManager {
   private wss: WebSocket.Server;
