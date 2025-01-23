@@ -11,7 +11,7 @@ import { config } from './core/config';
 import logger from './core/lib/logger';
 import taskEngine from './core/infrastructure/task-engine/taskEngine';
 import { WebSocketManager } from './core/lib/websocket';
-import { createSimulateExchangeRouter } from './api/simulate-exchange/routes';
+import createSimulateExchangeRouter from './api/simulate-exchange/routes';
 
 dotenv.config();
 
@@ -60,9 +60,7 @@ app.get('/metrics', (req, res) => {
 });
 
 // Routes go here
-const simulateExchangeRouter = createSimulateExchangeRouter();
-
-app.use('/api', simulateExchangeRouter);
+app.use('/api', createSimulateExchangeRouter);
 
 // Websocket Logic
 new WebSocketManager(server, taskEngine);

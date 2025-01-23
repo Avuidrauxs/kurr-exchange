@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import { Task } from './task';
-import { TaskStatus } from '@/core/types';
+import { TaskStatus } from '../../types';
+import { config } from '../../config';
 
 export class TaskEngine {
   private tasks: Map<string, Task> = new Map();
@@ -26,7 +27,7 @@ export class TaskEngine {
     this.subscriptions.get(taskId)!.add(ws);
   }
 
-  private async executeTask(task: Task): Promise<void> {
+  private async executeTask(task: Task, retryCount: number = 0): Promise<void> {
     try {
       for (const step of task.steps) {
         await step();
@@ -34,10 +35,19 @@ export class TaskEngine {
       }
       task.status = TaskStatus.Completed;
     } catch (error) {
-      task.status = TaskStatus.Failed;
-      task.error = error instanceof Error ? error.message : 'Unknown error';
+        if (retryCount < config.maxRetries) {
+            task.status = TaskStatus.Retrying;
+            task.error = `Retry attempt ${retryCount + 1} of ${config.maxRetries}`;
+            this.updateTaskProgress(task);
+    
+            await new Promise(resolve => setTimeout(resolve, config.retryDelay));
+            await this.executeTask(task, retryCount + 1);
+          }else {
+            task.status = TaskStatus.Failed;
+            task.error = error instanceof Error ? error.message : 'Unknown error';
+            this.updateTaskProgress(task);
+        }
     }
-    this.updateTaskProgress(task);
   }
 
   private updateTaskProgress(task: Task): void {

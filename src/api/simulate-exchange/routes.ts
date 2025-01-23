@@ -1,14 +1,13 @@
-import express from 'express';
-import SimulateExchangeController from './controller';
-import taskEngine from '@/core/infrastructure/task-engine/taskEngine';
+import { Router } from 'express';
+import { SimulateExchangeController } from './controller';
+import { TaskEngine } from '../../core/infrastructure/task-engine/taskEngine';
 
-export function createSimulateExchangeRouter(): express.Router {
-  const simulateExchangeController = new SimulateExchangeController(taskEngine);
-  const router = express.Router();
+const router = Router();
+const taskEngine = new TaskEngine();
+const controller = new SimulateExchangeController(taskEngine);
 
-  router.post('/simulate-exchange', simulateExchangeController.simulateExchange);
-  router.get('/simulate-exchange/:id', simulateExchangeController.getTaskStatus);
-  router.get('/simulate-exchange', simulateExchangeController.getAllTasks);
+router.post('/simulate-exchange', controller.simulateExchange.bind(controller));
+router.get('/simulate-exchange/:taskId', controller.getTaskStatus.bind(controller));
+router.get('/simulate-exchange', controller.getAllTasks.bind(controller));
 
-  return router;
-}
+export default router;

@@ -11,4 +11,11 @@ export abstract class Task {
   constructor(id: string) {
     this.id = id;
   }
+
+  reset(): void {
+    this.status = TaskStatus.Pending;
+    this.progress = 0;
+    this.result = {};
+    this.error = undefined;
+  }
 }

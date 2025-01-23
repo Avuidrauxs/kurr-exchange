@@ -1,5 +1,6 @@
-import { TaskStatus } from '@/core/types';
+import { TaskStatus } from '../../core/types';
 import { Task } from '../../core/infrastructure/task-engine/task';
+import { config } from '../../core/config';
 
 export class SimulateExchangeTaskService extends Task {
   steps: (() => Promise<void>)[];
@@ -48,7 +49,7 @@ export class SimulateExchangeTaskService extends Task {
       await new Promise(resolve => setTimeout(resolve, 1000));
       const elapsedTime = Date.now() - startTime;
       this.progress = Math.min(0.9, 0.5 + (elapsedTime / duration) * 0.4);
-      if (Math.random() < 0.25) {
+      if (Math.random() < config.errorRate) {
         throw new Error('Random error occurred during simulation');
       }
     }
@@ -62,5 +63,10 @@ export class SimulateExchangeTaskService extends Task {
   private async simulateStep(minDuration: number, maxDuration: number): Promise<void> {
     const duration = Math.floor(Math.random() * (maxDuration - minDuration + 1) + minDuration);
     await new Promise(resolve => setTimeout(resolve, duration));
+  }
+
+  reset(): void {
+    super.reset();
+    this.result = {};
   }
 }
