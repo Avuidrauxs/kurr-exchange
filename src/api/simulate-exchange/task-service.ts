@@ -1,8 +1,11 @@
 import { TaskStatus } from '../../core/types';
-import { Task } from '../../core/infrastructure/task-engine/task';
+import { Task } from '../../core/interfaces/task';
 import { config } from '../../core/config';
 
 export class SimulateExchangeTaskService extends Task {
+  execute() {
+      throw new Error('Method not implemented.');
+  }
   steps: (() => Promise<void>)[];
   private baseCurrency: string;
   private targetCurrency: string;
@@ -29,6 +32,11 @@ export class SimulateExchangeTaskService extends Task {
         this.amount <= 0) {
       throw new Error('Invalid input parameters');
     }
+    this.payload = {
+      baseCurrency: this.baseCurrency,
+      targetCurrency: this.targetCurrency,
+      amount: this.amount
+    };
     this.progress = 0.25;
   }
 

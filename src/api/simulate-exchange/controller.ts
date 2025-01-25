@@ -3,9 +3,12 @@ import { TaskEngine } from '../../core/infrastructure/task-engine/taskEngine';
 import { SimulateExchangeTaskService } from './task-service';
 import { v4 as uuidv4 } from 'uuid';
 import { TaskStatus } from '../../core/types';
+import { config } from '../../core/config';
+import RedisClient from '../../core/lib/redis/RedisClient';
 
 class SimulateExchangeController {
     private readonly taskEngine: TaskEngine;
+    private redisClient = RedisClient.getInstance();
 
     constructor(taskEngine: TaskEngine) {
         if (!taskEngine) {
@@ -25,6 +28,17 @@ class SimulateExchangeController {
         if (!baseCurrency || !targetCurrency || !amount) {
             return res.status(400).json({ error: 'Missing required parameters' });
         }
+
+        if (config.redis.enabled) {
+            const cacheKey = `exchange:${baseCurrency}:${targetCurrency}:${amount}`;
+            const cachedResult = await this.redisClient.get(cacheKey);
+      
+            if (cachedResult) {
+              const parsedResult = JSON.parse(cachedResult);
+              res.status(200).json({ ...parsedResult, cached: true });
+              return;
+            }
+          }
 
         const taskId = uuidv4();
         const task = new SimulateExchangeTaskService(taskId, baseCurrency, targetCurrency, amount);
@@ -56,6 +70,10 @@ class SimulateExchangeController {
         if (!task) {
             return res.status(404).json({ error: 'Task not found' });
         }
+        if (task.status === 'completed' && config.redis.enabled) {
+            const cacheKey = `exchange:${task.payload.baseCurrency}:${task.payload.targetCurrency}:${task.payload.amount}`;
+            await this.redisClient.set(cacheKey, JSON.stringify(task));
+          }
         res.json(this.formatTaskResponse(task));
     }
 

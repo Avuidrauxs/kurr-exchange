@@ -1,10 +1,13 @@
-import { TaskDetails, TaskStatus } from "../../types";
+import { TaskDetails, TaskPayload, TaskStatus } from "../types";
+
 
 export abstract class Task {
   id: string;
   status: TaskStatus = TaskStatus.Pending;
-  progress: number = 0;
-  result: TaskDetails = {};
+  progress?: number = 0;
+  parallel?: boolean = false;
+  result?: any = {};
+  payload: TaskPayload = {};
   error?: string;
   abstract steps: (() => Promise<void>)[];
 

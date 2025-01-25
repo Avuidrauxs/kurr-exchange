@@ -10,6 +10,7 @@ interface Config {
     host: string;
     port: string;
     ttl: number;
+    enabled: boolean;
   };
   maxRetries: number;
   retryDelay: number;
@@ -26,6 +27,7 @@ export const config: Config = {
     host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT || '6379',
     ttl: 60 * 60 * 24, // 24 hours
+    enabled: process.env.REDIS_ENABLED === 'true',
   },
   maxRetries: 3,
   retryDelay: 1000,

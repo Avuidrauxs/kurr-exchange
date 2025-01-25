@@ -12,3 +12,9 @@ export type TaskDetails = {
   retrieveAmount?: number;
   simulationReport?: string;
 }
+
+export type TaskPayload = {
+  baseCurrency?: string;
+  targetCurrency?: string;
+  amount?: number;
+}

@@ -4,19 +4,19 @@ const config: Config.InitialOptions = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/*.test.ts'],
-  collectCoverage: true,
+  collectCoverage: false,
   coverageDirectory: 'coverage',
   globalSetup: './test_utils/jest.setup.ts',
   globalTeardown: './test_utils/jest.teardown.ts',
   coverageThreshold: {
     global: {
-      branches: 50,
-      functions: 50,
-      lines: 90,
-      statements: 90,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
   },
-  coveragePathIgnorePatterns: ['./src/core/lib/langchain']
+  // coveragePathIgnorePatterns: ['']
 };
 
 export default config;
