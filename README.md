@@ -1,4 +1,4 @@
-# Currency Exchange Simulation API
+# KURR - EXCHANGE ( A Currency Exchange Simulation API)
 
 A Node.js/TypeScript-based API that simulates currency exchange operations with real-time progress tracking via WebSocket.
 
