@@ -200,17 +200,15 @@ sequenceDiagram
 ### 11.1 Error Types
 
 - ValidationError: Invalid input parameters
-- TaskExecutionError: Simulation processing errors
-- CacheError: Redis-related errors
-- WebSocketError: Connection and message handling errors
+- TaskServiceError: General task service errors
+- SimulationError:  Simulation processing errors
 
 ### 11.2 Error Response Format
 
 ```json
 {
-  "error": "Error message",
   "code": "ERROR_CODE",
-  "details": {}
+  "message": "Error message"
 }
 ```
 
@@ -222,8 +220,6 @@ sequenceDiagram
 - `REDIS_HOST`: Redis host
 - `REDIS_PORT`: Redis port
 - `REDIS_ENABLED`: Enable/disable Redis caching
-- `MAX_RETRIES`: Maximum task retry attempts
-- `RETRY_DELAY`: Delay between retries (ms)
 
 ## 13. Maintenance and Support
 
@@ -239,7 +235,6 @@ sequenceDiagram
 - Detailed error logging
 - Task execution tracking
 - WebSocket message logging
-- Cache hit/miss monitoring
 
 ## 14. Future Enhancements
 
@@ -252,7 +247,7 @@ sequenceDiagram
    - Support for more currency pairs
    - Historical exchange rate tracking
    - User authentication and rate limiting
-   - Advanced simulation parameters
+   - Advanced simulation parameters to make it more realistic and dynamic
 
 3. **Infrastructure**
    - Kubernetes deployment support
