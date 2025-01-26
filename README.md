@@ -72,7 +72,8 @@ Request body:
 {
   "baseCurrency": "USD",
   "targetCurrency": "EUR",
-  "amount": 100
+  "amount": 100,
+  "conversionRate": 0.85
 }
 ```
 

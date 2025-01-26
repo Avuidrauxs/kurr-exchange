@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { TaskStatus } from '../../core/types';
 import { config } from '../../core/config';
 import RedisClient from '../../core/lib/redis/RedisClient';
+import { GlobalValidator } from '../../core/utils/validators';
+import { TaskServiceDto } from './task-service.dto';
 
 class SimulateExchangeController {
     private readonly taskEngine: TaskEngine;
@@ -20,15 +22,8 @@ class SimulateExchangeController {
     // POST /simulate-exchange
     async simulateExchange(req: Request, res: Response, next: NextFunction) {
         try {
-            const { baseCurrency, targetCurrency, amount } = req.body as unknown as {
-                baseCurrency: string;
-                targetCurrency: string; 
-                amount: number;
-            };
-        
-            if (!baseCurrency || !targetCurrency || !amount) {
-                return res.status(400).json({ error: 'Missing required parameters' });
-            }
+            const validationResult = await GlobalValidator.validateInput(TaskServiceDto, req.body);
+            const { baseCurrency, targetCurrency, amount, conversionRate } = validationResult;
 
             if (config.redis.enabled) {
                 const cacheKey = `exchange:${baseCurrency}:${targetCurrency}:${amount}`;
@@ -42,7 +37,7 @@ class SimulateExchangeController {
             }
 
             const taskId = uuidv4();
-            const task = new SimulateExchangeTaskService(taskId, baseCurrency, targetCurrency, amount);
+            const task = new SimulateExchangeTaskService(taskId, baseCurrency, targetCurrency, amount, conversionRate);
             this.taskEngine.addTask(task);
         
             res.status(201).json({ taskId });

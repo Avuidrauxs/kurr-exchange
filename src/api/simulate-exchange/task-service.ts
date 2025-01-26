@@ -2,6 +2,7 @@ import { TaskStatus } from '../../core/types';
 import { Task } from '../../core/interfaces/task';
 import { config } from '../../core/config';
 import { SimulationError, ValidationError } from '../../core/errors';
+import { conversionRateRange, currencies } from '../../core/constants';
 
 export class SimulateExchangeTaskService extends Task {
   steps: (() => Promise<void>)[];
@@ -26,8 +27,8 @@ export class SimulateExchangeTaskService extends Task {
   private async validateInput(): Promise<void> {
     this.status = TaskStatus.InProgress;
     await this.simulateStep(1000, 2000);
-    if (!['USD', 'EUR', 'GBP', 'JPY'].includes(this.baseCurrency) ||
-        !['USD', 'EUR', 'GBP', 'JPY'].includes(this.targetCurrency) ||
+    if (!currencies.includes(this.baseCurrency) ||
+        !currencies.includes(this.targetCurrency) ||
         this.amount <= 0) {
       throw new ValidationError('Invalid input parameters');
     }
@@ -41,7 +42,8 @@ export class SimulateExchangeTaskService extends Task {
 
   private async convertCurrency(): Promise<void> {
     await this.simulateStep(1000, 3000);
-    const conversionRate = this.conversionRate || Math.random() * (1.5 - 0.5) + 0.5;
+    const conversionRate = this.conversionRate 
+        || Math.random() * (conversionRateRange.max - conversionRateRange.min) + conversionRateRange.min;
     this.result.conversionRate = conversionRate;
     this.result.exchangeAmount = this.amount * conversionRate;
     this.progress = 0.5;

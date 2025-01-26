@@ -23,12 +23,12 @@ describe('SimulateExchangeController Integration Tests', () => {
                 .post('/api/simulate-exchange')
                 .send({
                     baseCurrency: 'USD',
-                    // missing targetCurrency and amount
+                    amount: 100,
                 });
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({
-                error: 'Missing required parameters'
+                "message": "Validation failed: targetCurrency should not be empty, targetCurrency must be a string"
             });
         });
     });
