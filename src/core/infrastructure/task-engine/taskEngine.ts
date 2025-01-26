@@ -30,35 +30,57 @@ export class TaskEngine {
     console.log(`Current subscribers for task ${taskId}: ${subscribers.size}`);
   }
 
-  private async executeTask(task: Task, retryCount: number = 0): Promise<void> {
-    try {
-      if (task.parallel) {
-        // Execute steps in parallel
-        await Promise.all(task.steps.map(async (step) => {
-          await step();
-          this.updateTaskProgress(task);
-        }));
-      } else {
-        // Execute steps sequentially
-        for (const step of task.steps) {
-          await step();
+  // Retry strategy
+  private async retryOperation<T>(
+    operation: () => Promise<T>,
+    taskId: string,
+    maxRetries: number = config.maxRetries,
+    delay: number = config.retryDelay
+  ): Promise<T> {
+    let lastError: Error | undefined;
+    
+    for (let attempt = 0; attempt < maxRetries + 1; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('Unknown error');
+        
+        if (attempt === maxRetries) break;
+        
+        const task = this.tasks.get(taskId);
+        if (task) {
+          task.status = TaskStatus.Retrying;
+          task.error = `Retry attempt ${attempt + 1} of ${maxRetries}`;
           this.updateTaskProgress(task);
         }
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
-      task.status = TaskStatus.Completed;
-    } catch (error) {
-      if (retryCount < config.maxRetries) {
-        task.status = TaskStatus.Retrying;
-        task.error = `Retry attempt ${retryCount + 1} of ${config.maxRetries}`;
-        this.updateTaskProgress(task);
+    }
+    
+    throw lastError;
+  }
 
-        await new Promise(resolve => setTimeout(resolve, config.retryDelay));
-        await this.executeTask(task, retryCount + 1);
-      } else {
-        task.status = TaskStatus.Failed;
-        task.error = error instanceof Error ? error.message : 'Unknown error';
-        this.updateTaskProgress(task);
-      }
+  private async executeTask(task: Task): Promise<void> {
+    try {
+      await this.retryOperation(async () => {
+        if (task.parallel) {
+          await Promise.all(task.steps.map(async (step) => {
+            await step();
+            this.updateTaskProgress(task);
+          }));
+        } else {
+          for (const step of task.steps) {
+            await step();
+            this.updateTaskProgress(task);
+          }
+        }
+        task.status = TaskStatus.Completed;
+      }, task.id);
+    } catch (error) {
+      task.status = TaskStatus.Failed;
+      task.error = error instanceof Error ? error.message : 'Unknown error';
+      this.updateTaskProgress(task);
     }
   }
 

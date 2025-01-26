@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from '../../core/lib/logger';
 import {
-  ContextServiceError,
-  UserServiceError,
+  SimulationError,
+  TaskServiceError,
   ValidationError,
 } from '../../core/errors';
 
@@ -13,11 +13,11 @@ const errorHandler = (
   next: NextFunction,
 ) => {
   logger.error(err.stack);
-  if (err instanceof ValidationError || err instanceof ContextServiceError) {
+  if (err instanceof ValidationError || err instanceof SimulationError) {
     return res.status(400).json({ message: err.message });
   }
-  if (err instanceof UserServiceError) {
-    return res.status(401).json({ message: err.message });
+  if (err instanceof TaskServiceError) {
+    return res.status(422).json({ message: err.message });
   }
   res.status(500).json({
     message: 'An unexpected error occurred',

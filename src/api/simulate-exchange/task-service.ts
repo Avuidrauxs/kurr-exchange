@@ -1,21 +1,20 @@
 import { TaskStatus } from '../../core/types';
 import { Task } from '../../core/interfaces/task';
 import { config } from '../../core/config';
+import { SimulationError, ValidationError } from '../../core/errors';
 
 export class SimulateExchangeTaskService extends Task {
-  execute() {
-      throw new Error('Method not implemented.');
-  }
   steps: (() => Promise<void>)[];
   private baseCurrency: string;
   private targetCurrency: string;
   private amount: number;
-
-  constructor(id: string, baseCurrency: string, targetCurrency: string, amount: number) {
+  private conversionRate?: number;
+  constructor(id: string, baseCurrency: string, targetCurrency: string, amount: number, conversionRate?: number) {
     super(id);
     this.baseCurrency = baseCurrency;
     this.targetCurrency = targetCurrency;
     this.amount = amount;
+    this.conversionRate = conversionRate;
     this.steps = [
       this.validateInput.bind(this),
       this.convertCurrency.bind(this),
@@ -30,7 +29,7 @@ export class SimulateExchangeTaskService extends Task {
     if (!['USD', 'EUR', 'GBP', 'JPY'].includes(this.baseCurrency) ||
         !['USD', 'EUR', 'GBP', 'JPY'].includes(this.targetCurrency) ||
         this.amount <= 0) {
-      throw new Error('Invalid input parameters');
+      throw new ValidationError('Invalid input parameters');
     }
     this.payload = {
       baseCurrency: this.baseCurrency,
@@ -42,7 +41,7 @@ export class SimulateExchangeTaskService extends Task {
 
   private async convertCurrency(): Promise<void> {
     await this.simulateStep(1000, 3000);
-    const conversionRate = Math.random() * (1.5 - 0.5) + 0.5;
+    const conversionRate = this.conversionRate || Math.random() * (1.5 - 0.5) + 0.5;
     this.result.conversionRate = conversionRate;
     this.result.exchangeAmount = this.amount * conversionRate;
     this.progress = 0.5;
@@ -58,7 +57,7 @@ export class SimulateExchangeTaskService extends Task {
       const elapsedTime = Date.now() - startTime;
       this.progress = Math.min(0.9, 0.5 + (elapsedTime / duration) * 0.4);
       if (Math.random() < config.errorRate) {
-        throw new Error('Random error occurred during simulation');
+        throw new SimulationError('Random error occurred during simulation');
       }
     }
   }
