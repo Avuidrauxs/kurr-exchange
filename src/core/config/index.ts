@@ -31,5 +31,5 @@ export const config: Config = {
   },
   maxRetries: 3,
   retryDelay: 1000,
-  errorRate: 0.1,
+  errorRate: 0.15, // 15% error rate
 };

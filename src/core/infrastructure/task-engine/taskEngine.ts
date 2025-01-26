@@ -2,6 +2,7 @@ import WebSocket from 'ws';
 import { Task } from '../../interfaces/task';
 import { TaskStatus } from '../../types';
 import { config } from '../../config';
+import logger from '../../lib/logger';
 
 export class TaskEngine {
   private tasks: Map<string, Task> = new Map();
@@ -21,13 +22,13 @@ export class TaskEngine {
   }
 
   subscribeToTask(taskId: string, ws: WebSocket): void {
-    console.log(`Subscribing to task ${taskId}`);
+    logger.info(`Subscribing to task ${taskId}`);
     if (!this.subscriptions.has(taskId)) {
       this.subscriptions.set(taskId, new Set());
     }
     const subscribers = this.subscriptions.get(taskId)!;
     subscribers.add(ws);
-    console.log(`Current subscribers for task ${taskId}: ${subscribers.size}`);
+    logger.info(`Current subscribers for task ${taskId}: ${subscribers.size}`);
   }
 
   // Retry strategy
@@ -86,7 +87,7 @@ export class TaskEngine {
 
   private updateTaskProgress(task: Task): void {
     const subscribers = this.subscriptions.get(task.id);
-    console.log(`Updating task ${task.id}, subscribers: ${subscribers?.size || 0}`);
+    logger.info(`Updating task ${task.id}, subscribers: ${subscribers?.size || 0}`);
     if (subscribers) {
       const update = JSON.stringify({
         taskId: task.id,
@@ -95,12 +96,12 @@ export class TaskEngine {
         result: task.result,
         error: task.error
       });
-      console.log(`Sending update: ${update}`);
+      logger.info(`Sending update: ${update}`);
       subscribers.forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(update);
         } else {
-          console.log(`WebSocket not open, state: ${ws.readyState}`);
+          logger.info(`WebSocket not open, state: ${ws.readyState}`);
         }
       });
     }
