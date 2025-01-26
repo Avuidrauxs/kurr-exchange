@@ -4,7 +4,6 @@
 
 KURR Exchange is a Node.js/TypeScript-based API that simulates currency exchange operations with real-time progress tracking. The system provides a robust platform for simulating currency exchanges with multiple processing stages and live updates through WebSocket connections.
 
-System design doc found [here](system_doc.md)
 
 ### 1.1 Key Features
 

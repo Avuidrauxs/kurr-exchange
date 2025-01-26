@@ -2,6 +2,8 @@
 
 A Node.js/TypeScript-based API that simulates currency exchange operations with real-time progress tracking via WebSocket.
 
+System design doc found [here](system_doc.md)
+
 ## Features
 
 - Currency exchange simulation with multiple stages
