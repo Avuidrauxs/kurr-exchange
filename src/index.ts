@@ -62,11 +62,12 @@ app.get('/metrics', (req, res) => {
 // Routes go here
 app.use('/api', createSimulateExchangeRouter);
 
-// Websocket Logic
-new WebSocketManager(server, taskEngine);
 
 // Catch-all error handling middleware
 app.use(errorHandler);
+
+// Websocket Logic
+new WebSocketManager(server, taskEngine);
 
 if (env !== 'test') {
   server.listen(port, () => {

@@ -21,10 +21,13 @@ export class TaskEngine {
   }
 
   subscribeToTask(taskId: string, ws: WebSocket): void {
+    console.log(`Subscribing to task ${taskId}`);
     if (!this.subscriptions.has(taskId)) {
       this.subscriptions.set(taskId, new Set());
     }
-    this.subscriptions.get(taskId)!.add(ws);
+    const subscribers = this.subscriptions.get(taskId)!;
+    subscribers.add(ws);
+    console.log(`Current subscribers for task ${taskId}: ${subscribers.size}`);
   }
 
   private async executeTask(task: Task, retryCount: number = 0): Promise<void> {
@@ -61,6 +64,7 @@ export class TaskEngine {
 
   private updateTaskProgress(task: Task): void {
     const subscribers = this.subscriptions.get(task.id);
+    console.log(`Updating task ${task.id}, subscribers: ${subscribers?.size || 0}`);
     if (subscribers) {
       const update = JSON.stringify({
         taskId: task.id,
@@ -69,9 +73,12 @@ export class TaskEngine {
         result: task.result,
         error: task.error
       });
+      console.log(`Sending update: ${update}`);
       subscribers.forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(update);
+        } else {
+          console.log(`WebSocket not open, state: ${ws.readyState}`);
         }
       });
     }

@@ -36,7 +36,7 @@ class SimulateExchangeController {
           
                 if (cachedResult) {
                   const parsedResult = JSON.parse(cachedResult);
-                  res.status(200).json({ ...parsedResult, cached: true });
+                  res.status(200).json({ ...this.formatTaskResponse(parsedResult)});
                   return;
                 }
             }
